@@ -1,0 +1,51 @@
+@TaskManagementApi_HostAddress = http://localhost:5264
+
+GET {{TaskManagementApi_HostAddress}}/api/tasks
+Accept: application/json
+
+###
+GET {{TaskManagementApi_HostAddress}}/api/tasks?status=Pending
+
+###
+
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Add unit tests",
+  "description": "Cover create, update, delete and missing task",
+  "status": 1,
+  "priority": 2,
+  "dueDate": "2026-12-05T00:00:00Z"
+}
+
+###
+
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Write README",
+  "description": "Document the endpoints and how to run the tests",
+  "status": 0,
+  "priority": 1,
+  "dueDate": "2026-12-01T00:00:00Z"
+}
+
+###
+GET {{TaskManagementApi_HostAddress}}/api/tasks/1
+
+###
+DELETE {{TaskManagementApi_HostAddress}}/api/tasks/1
+
+### 
+PUT {{TaskManagementApi_HostAddress}}/api/tasks/2
+Content-Type: application/json
+
+{
+  "title": "Ganaxlebuli Taski",
+  "description": "Document the endpoints and how to run the tests",
+  "status": 0,
+  "priority": 1,
+  "dueDate": "2026-12-01T00:00:00Z"
+}

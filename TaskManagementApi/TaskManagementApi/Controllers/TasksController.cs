@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using TaskManagementApi.DTOs;
+using TaskManagementApi.Models;
 using TaskManagementApi.Services;
 
 namespace TaskManagementApi.Controllers
@@ -18,9 +19,9 @@ namespace TaskManagementApi.Controllers
 
 
         [HttpGet]
-        public ActionResult<IEnumerable<TaskResponseDto>> GetAllTasks()
+        public ActionResult<IEnumerable<TaskResponseDto>> GetAllTasks([FromQuery] TaskItemStatus? status)
         {
-            return Ok(_taskService.GetTasks());
+            return Ok(_taskService.GetTasks(status));
         }
 
         [HttpGet("{id}")]
@@ -51,6 +52,17 @@ namespace TaskManagementApi.Controllers
             var createdTask = _taskService.CreateTask(createTask);
 
             return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id}, createdTask);
+        }
+
+        [HttpDelete("{id}")]
+        public IActionResult DeleteTask(int id) 
+        {
+            var deleted = _taskService.DeleteTask(id);
+
+            if (!deleted) 
+                return NotFound();
+
+            return NoContent();
         }
 
     }

@@ -8,6 +8,8 @@ namespace TaskManagementApi.DTOs
         [Required]
         [StringLength(200, MinimumLength = 1)]
         public string Title { get; set; } = string.Empty;
+
+        [Required, StringLength(800)]
         public string Description { get; set; } = string.Empty;
 
         [EnumDataType(typeof(TaskItemStatus))]

@@ -10,19 +10,12 @@ namespace TaskManagementApi.Services
         private readonly List<TaskItem> _tasks = new();
         private int _nextId = 1;
 
-        public IEnumerable<TaskResponseDto> GetTasks()
+        public IEnumerable<TaskResponseDto> GetTasks(TaskItemStatus? status = null)
         {
             return _tasks
+                .Where(t => t.Status == status || status == null)
                 .OrderBy(t => t.Id)
-                .Select(t => new TaskResponseDto()
-                {
-                    Id = t.Id,
-                    Title = t.Title,
-                    Description = t.Description,
-                    Priority = t.Priority,
-                    DueDate = t.DueDate,
-                    Status = t.Status
-                })
+                .Select(ToResponse)
                 .ToList();
         }
 
@@ -69,6 +62,17 @@ namespace TaskManagementApi.Services
             };
             _tasks.Add(task);
             return ToResponse(task);
+        }
+
+        public bool DeleteTask(int id)
+        {
+            var task = _tasks.FirstOrDefault(_t => _t.Id == id);
+
+            if ( task == null ) 
+                return false;
+
+            _tasks.Remove(task);
+            return true;
         }
 
         //this returns TaskResponseDto for our responses on client's side
