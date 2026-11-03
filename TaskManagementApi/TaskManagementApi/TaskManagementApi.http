@@ -49,3 +49,89 @@ Content-Type: application/json
   "priority": 1,
   "dueDate": "2026-12-01T00:00:00Z"
 }
+
+### ---------- 404: unknown ID ----------
+
+### GET unknown id (expect 404)
+GET {{TaskManagementApi_HostAddress}}/api/tasks/999
+
+### PUT unknown id (expect 404)
+PUT {{TaskManagementApi_HostAddress}}/api/tasks/999
+Content-Type: application/json
+
+{
+  "title": "Does not exist",
+  "description": "",
+  "status": 0,
+  "priority": 0,
+  "dueDate": "2026-12-01T00:00:00Z"
+}
+
+### DELETE unknown id (expect 404)
+DELETE {{TaskManagementApi_HostAddress}}/api/tasks/999
+
+### GET the task deleted earlier (expect 404)
+GET {{TaskManagementApi_HostAddress}}/api/tasks/1
+
+### DELETE the same task again (expect 404)
+DELETE {{TaskManagementApi_HostAddress}}/api/tasks/1
+
+### ---------- 400: invalid requests ----------
+
+### POST with an empty title (expect 400)
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "",
+  "description": "Blank title",
+  "status": 0,
+  "priority": 0,
+  "dueDate": "2026-12-01T00:00:00Z"
+}
+
+### POST with a missing dueDate (expect 400)
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "No due date",
+  "description": "",
+  "status": 0,
+  "priority": 0
+}
+
+### POST with an invalid status (expect 400)
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Bad status",
+  "description": "",
+  "status": 99,
+  "priority": 0,
+  "dueDate": "2026-12-01T00:00:00Z"
+}
+
+### PUT with an empty title (expect 400)
+PUT {{TaskManagementApi_HostAddress}}/api/tasks/2
+Content-Type: application/json
+
+{
+  "title": "",
+  "description": "",
+  "status": 0,
+  "priority": 0,
+  "dueDate": "2026-12-01T00:00:00Z"
+}
+
+### ---------- Status filter ----------
+
+### Filter by InProgress (expect 200 and only matching tasks)
+GET {{TaskManagementApi_HostAddress}}/api/tasks?status=InProgress
+
+### Filter by Completed (expect 200 and [] if none are completed)
+GET {{TaskManagementApi_HostAddress}}/api/tasks?status=Completed
+
+### Invalid status filter (expect 400)
+GET {{TaskManagementApi_HostAddress}}/api/tasks?status=abc

@@ -71,6 +71,7 @@ namespace TaskManagementApi.Tests
             Assert.Null(service.GetTaskById(created.Id));
         }
 
+        [Fact]
         public void DeleteTask_UnknownId_ReturnsFalse()
         {
             var service = new TaskService();
@@ -98,6 +99,16 @@ namespace TaskManagementApi.Tests
             Assert.Equal(TaskItemStatus.Completed, service.GetTaskById(created.Id)!.Status);
         }
 
+        [Fact]
+        public void UpdateTask_UnknownId_ReturnsNull()
+        {
+            var service = new TaskService();
+
+            var result = service.UpdateTask(999, new UpdateTaskDto { Title = "Nothing here", DueDate = Due });
+
+            Assert.Null(result);
+        }
+
         //get task
         [Fact]
         public void GetTaskById_UnknownId()
@@ -106,6 +117,28 @@ namespace TaskManagementApi.Tests
 
             Assert.Null(service.GetTaskById(700));
         }
+
+        // status filter test
+        [Fact]
+        public void GetTasks_WithStatusFilter_ReturnsOnlyMatching()
+        {
+            var service = new TaskService();
+            service.CreateTask(NewTask("Pending one"));
+            var done = service.CreateTask(NewTask("Done one"));
+            service.UpdateTask(done.Id, new UpdateTaskDto
+            {
+                Title = "Done one",
+                Status = TaskItemStatus.Completed,
+                DueDate = Due
+            });
+
+            var result = service.GetTasks(TaskItemStatus.Completed).ToList();
+
+            Assert.Single(result);
+            Assert.Equal(done.Id, result[0].Id);
+        }
+
+
 
     }
 }
