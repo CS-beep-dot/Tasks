@@ -1,5 +1,9 @@
-﻿namespace TaskManagementApi.Models
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace TaskManagementApi.Models
 {
+    [Index(nameof(ProjectId))]
+    [Index(nameof(Status))]
     public class TaskItem
     {
         public int Id { get; set; }
@@ -8,5 +12,12 @@
         public TaskItemStatus Status { get; set; }
         public TaskPriority Priority { get; set; }
         public DateTime DueDate { get; set; }
+
+
+        public int ProjectId { get; set; }             // required
+        public Project Project { get; set; } = null!;
+
+        public int? AssigneeId { get; set; }         //optionals
+        public User? Assignee { get; set; }
     }
 }

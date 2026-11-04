@@ -1,4 +1,6 @@
 
+using Microsoft.EntityFrameworkCore;
+using TaskManagementApi.Data;
 using TaskManagementApi.Services;
 
 namespace TaskManagementApi
@@ -17,6 +19,9 @@ namespace TaskManagementApi
 
             //service registration
             builder.Services.AddSingleton<ITaskService, TaskService>();
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("AppDbConnection")));
 
             var app = builder.Build();
 
