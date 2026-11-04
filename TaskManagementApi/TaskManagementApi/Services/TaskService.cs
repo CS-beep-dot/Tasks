@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using TaskManagementApi.Data;
 using TaskManagementApi.DTOs;
 using TaskManagementApi.Models;
 
@@ -7,6 +8,14 @@ namespace TaskManagementApi.Services
 {
     public class TaskService : ITaskService
     {
+
+        //private readonly AppDbContext _db;
+
+        //public TaskService(AppDbContext db)
+        //{
+        //    _db = db;
+        //}
+
         private readonly List<TaskItem> _tasks = new();
         private int _nextId = 1;
 

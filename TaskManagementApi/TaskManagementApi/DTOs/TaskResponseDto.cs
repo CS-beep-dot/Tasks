@@ -1,4 +1,5 @@
-﻿using TaskManagementApi.Models;
+﻿using System.ComponentModel.DataAnnotations;
+using TaskManagementApi.Models;
 
 namespace TaskManagementApi.DTOs
 {
@@ -10,5 +11,9 @@ namespace TaskManagementApi.DTOs
         public TaskItemStatus Status { get; set; }
         public TaskPriority Priority { get; set; }
         public DateTime DueDate { get; set; }
+
+        public int ProjectId { get; set; }    
+
+        public int? AssigneeId { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagementApi.Models
 {
@@ -7,7 +8,11 @@ namespace TaskManagementApi.Models
     public class TaskItem
     {
         public int Id { get; set; }
+
+        [Required, MaxLength(100)]
         public string Title { get; set; } = string.Empty;
+
+        [Required, MaxLength(800)]
         public string Description { get; set; } = string.Empty;
         public TaskItemStatus Status { get; set; }
         public TaskPriority Priority { get; set; }

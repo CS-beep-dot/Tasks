@@ -1,4 +1,6 @@
-﻿namespace TaskManagementApi.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace TaskManagementApi.Models
 {
     public enum TaskItemStatus
     {

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
+using TaskManagementApi.Models;
 
 namespace TaskManagementApi.Data
 {
@@ -7,8 +8,35 @@ namespace TaskManagementApi.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
         {
+
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
 
+            base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<TaskItem>(e =>
+            {
+                e.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
+                e.Property(t => t.Priority).HasConversion<string>().HasMaxLength(20);
+
+                e.HasOne(t => t.Project)
+                    .WithMany(p => p.Tasks)
+                    .HasForeignKey(t => t.Project)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                e.HasOne(t => t.Assignee)
+                  .WithMany(u => u.AssignedTasks)
+                  .HasForeignKey(t => t.AssigneeId)
+                  .OnDelete(DeleteBehavior.SetNull);
+            });
+
+        }
+    
+        DbSet<User> Users => Set<User>();
+        DbSet<Project> Projects => Set<Project>();
+        DbSet<TaskItem> taskItems => Set<TaskItem>();
+    
     }
 }
