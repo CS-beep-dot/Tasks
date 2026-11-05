@@ -18,5 +18,11 @@ namespace TaskManagementApi.DTOs
         [EnumDataType(typeof(TaskPriority))]
         public TaskPriority Priority { get; set; }
         public DateTime DueDate { get; set; }
+
+        [Range(1, int.MaxValue)]
+        public int ProjectId { get; set; }  
+
+        public int? AssigneeId { get; set; }
+
     }
 }

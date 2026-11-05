@@ -18,7 +18,7 @@ namespace TaskManagementApi
             builder.Services.AddOpenApi();
 
             //service registration
-            builder.Services.AddSingleton<ITaskService, TaskService>();
+            builder.Services.AddScoped<ITaskService, TaskService>();
 
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("AppDbConnection")));

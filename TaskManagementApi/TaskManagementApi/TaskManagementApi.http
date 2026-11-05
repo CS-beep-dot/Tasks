@@ -135,3 +135,7 @@ GET {{TaskManagementApi_HostAddress}}/api/tasks?status=Completed
 
 ### Invalid status filter (expect 400)
 GET {{TaskManagementApi_HostAddress}}/api/tasks?status=abc
+
+
+###
+GET /api/tasks?page=1&pageSize=5

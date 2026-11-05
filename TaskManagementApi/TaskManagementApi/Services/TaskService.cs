@@ -1,77 +1,141 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using TaskManagementApi.Data;
 using TaskManagementApi.DTOs;
+using TaskManagementApi.Exceptions;
 using TaskManagementApi.Models;
 
 namespace TaskManagementApi.Services
 {
     public class TaskService : ITaskService
     {
-        private readonly List<TaskItem> _tasks = new();
-        private int _nextId = 1;
 
-        public IEnumerable<TaskResponseDto> GetTasks(TaskItemStatus? status = null)
+        private readonly AppDbContext _db;
+
+        public TaskService(AppDbContext db)
         {
-            return _tasks
-                .Where(t => t.Status == status || status == null)
-                .OrderBy(t => t.Id)
-                .Select(ToResponse)
-                .ToList();
+            _db = db;
         }
 
-        public TaskResponseDto? GetTaskById(int id)
+        //Helper for 
+        private async Task EnsureReferencesExistAsync(int projectId, int? assigneeId)
         {
-            var task = _tasks.FirstOrDefault(t => t.Id == id);
+            if (!await _db.Projects.AnyAsync(p => p.Id == projectId))
+                throw new InvalidReferenceException($"Project {projectId} does not exist.");
+
+            if (assigneeId != null && !await _db.Users.AnyAsync(u => u.Id == assigneeId))
+                throw new InvalidReferenceException($"User {assigneeId} does not exist.");
+        }
+
+
+        public async Task<PagedResult<TaskResponseDto>> GetTasks(
+            TaskItemStatus? status = null,
+            int? assigneeId = null,
+            int page = 1,
+            int pageSize = 10)
+        {
+
+            IQueryable<TaskItem> query = _db.Tasks.AsNoTracking();
+
+            if (status != null)
+            {
+                query = query.Where(t => t.Status == status);
+            }
+
+            if (assigneeId != null)
+            {
+                query = query.Where(t => t.AssigneeId == assigneeId);
+            }
+
+            int total = await query.CountAsync();
+
+            var tasks = await query
+                .OrderBy(t => t.Id)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .Select(t => new TaskResponseDto
+                {
+                    Id = t.Id,
+                    Title = t.Title,
+                    Description = t.Description,
+                    DueDate = t.DueDate,
+                    Priority = t.Priority,
+                    ProjectId = t.ProjectId,
+                    Status = t.Status,
+                    AssigneeId = t.AssigneeId,
+                })
+                .ToListAsync();
+
+            return new PagedResult<TaskResponseDto>
+            {
+                Items = tasks,
+                Page = page,
+                PageSize = pageSize,
+                TotalCount = total
+            };
+        }
+
+        public async Task<TaskResponseDto?> GetTaskById(int id)
+        {
+            var task = await _db.Tasks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
 
             if (task == null)
-            {
                 return null;
-            }
 
             return ToResponse(task);
         }
-
-        public TaskResponseDto? UpdateTask(int id, UpdateTaskDto taskItem)
+        public async Task<TaskResponseDto?> UpdateTask(int id, UpdateTaskDto taskItem)
         {
-            var task = _tasks.FirstOrDefault(t => t.Id == id);
+            await EnsureReferencesExistAsync(taskItem.ProjectId, taskItem.AssigneeId);
+
+            var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id);
 
             if (task == null)
-            {
                 return null;
-            }
 
             task.Description = taskItem.Description;
             task.Title = taskItem.Title;
             task.Priority = taskItem.Priority;
             task.DueDate = taskItem.DueDate;
             task.Status = taskItem.Status;
+            task.AssigneeId = taskItem.AssigneeId;
+            task.ProjectId = taskItem.ProjectId;
 
+            await _db.SaveChangesAsync();
             return ToResponse(task);
         }
 
-        public TaskResponseDto CreateTask(CreateTaskDto createTask)
+        public async Task<TaskResponseDto> CreateTask(CreateTaskDto createTask)
         {
+            await EnsureReferencesExistAsync(createTask.ProjectId, createTask.AssigneeId);
             var task = new TaskItem()
             {
-                Id = _nextId++,
                 Title = createTask.Title.Trim(),
                 Description = createTask.Description,
                 Priority = createTask.Priority,
                 DueDate = createTask.DueDate,
-                Status = createTask.Status
+                Status = createTask.Status,
+                ProjectId = createTask.ProjectId,
+                AssigneeId = createTask.AssigneeId
             };
-            _tasks.Add(task);
+            
+            _db.Tasks.Add(task);
+            await _db.SaveChangesAsync();
+
             return ToResponse(task);
         }
 
-        public bool DeleteTask(int id)
+        public async Task<bool> DeleteTask(int id)
         {
-            var task = _tasks.FirstOrDefault(_t => _t.Id == id);
-
+            var task = await _db.Tasks.FirstOrDefaultAsync(_t => _t.Id == id);
+            
             if ( task == null ) 
                 return false;
 
-            _tasks.Remove(task);
+            _db.Tasks.Remove(task);
+            await _db.SaveChangesAsync();
+
             return true;
         }
 
@@ -83,7 +147,9 @@ namespace TaskManagementApi.Services
             Description = task.Description,
             Priority = task.Priority,
             DueDate = task.DueDate,
-            Status = task.Status
+            Status = task.Status,
+            ProjectId = task.ProjectId,
+            AssigneeId = task.AssigneeId
         };
     }
 }
