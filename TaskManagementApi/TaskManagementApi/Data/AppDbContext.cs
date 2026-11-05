@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.Authentication;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using TaskManagementApi.Models;
 
 namespace TaskManagementApi.Data
@@ -23,7 +22,7 @@ namespace TaskManagementApi.Data
 
                 e.HasOne(t => t.Project)
                     .WithMany(p => p.Tasks)
-                    .HasForeignKey(t => t.Project)
+                    .HasForeignKey(t => t.ProjectId)
                     .OnDelete(DeleteBehavior.Cascade);
 
                 e.HasOne(t => t.Assignee)
@@ -34,9 +33,9 @@ namespace TaskManagementApi.Data
 
         }
     
-        DbSet<User> Users => Set<User>();
-        DbSet<Project> Projects => Set<Project>();
-        DbSet<TaskItem> taskItems => Set<TaskItem>();
+        public DbSet<User> Users => Set<User>();
+        public DbSet<Project> Projects => Set<Project>();
+        public DbSet<TaskItem> Tasks => Set<TaskItem>();
     
     }
 }

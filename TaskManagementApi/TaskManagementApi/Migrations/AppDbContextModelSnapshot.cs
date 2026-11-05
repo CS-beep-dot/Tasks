@@ -64,23 +64,29 @@ namespace TaskManagementApi.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(800)
+                        .HasColumnType("nvarchar(800)");
 
                     b.Property<DateTime>("DueDate")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("Priority")
-                        .HasColumnType("int");
+                    b.Property<string>("Priority")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<int>("ProjectId")
                         .HasColumnType("int");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Title")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.HasKey("Id");
 
@@ -90,7 +96,7 @@ namespace TaskManagementApi.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("taskItems");
+                    b.ToTable("Tasks");
                 });
 
             modelBuilder.Entity("TaskManagementApi.Models.User", b =>
@@ -123,7 +129,8 @@ namespace TaskManagementApi.Migrations
                 {
                     b.HasOne("TaskManagementApi.Models.User", "Assignee")
                         .WithMany("AssignedTasks")
-                        .HasForeignKey("AssigneeId");
+                        .HasForeignKey("AssigneeId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("TaskManagementApi.Models.Project", "Project")
                         .WithMany("Tasks")

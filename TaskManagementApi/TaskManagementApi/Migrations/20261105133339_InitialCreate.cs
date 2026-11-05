@@ -41,33 +41,34 @@ namespace TaskManagementApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "taskItems",
+                name: "Tasks",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<int>(type: "int", nullable: false),
-                    Priority = table.Column<int>(type: "int", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(800)", maxLength: 800, nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    Priority = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     DueDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ProjectId = table.Column<int>(type: "int", nullable: false),
                     AssigneeId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_taskItems", x => x.Id);
+                    table.PrimaryKey("PK_Tasks", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_taskItems_Projects_ProjectId",
+                        name: "FK_Tasks_Projects_ProjectId",
                         column: x => x.ProjectId,
                         principalTable: "Projects",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_taskItems_Users_AssigneeId",
+                        name: "FK_Tasks_Users_AssigneeId",
                         column: x => x.AssigneeId,
                         principalTable: "Users",
-                        principalColumn: "Id");
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateIndex(
@@ -77,18 +78,18 @@ namespace TaskManagementApi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_taskItems_AssigneeId",
-                table: "taskItems",
+                name: "IX_Tasks_AssigneeId",
+                table: "Tasks",
                 column: "AssigneeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_taskItems_ProjectId",
-                table: "taskItems",
+                name: "IX_Tasks_ProjectId",
+                table: "Tasks",
                 column: "ProjectId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_taskItems_Status",
-                table: "taskItems",
+                name: "IX_Tasks_Status",
+                table: "Tasks",
                 column: "Status");
 
             migrationBuilder.CreateIndex(
@@ -102,7 +103,7 @@ namespace TaskManagementApi.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "taskItems");
+                name: "Tasks");
 
             migrationBuilder.DropTable(
                 name: "Projects");

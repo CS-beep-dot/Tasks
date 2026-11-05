@@ -9,7 +9,7 @@ namespace TaskManagementApi.Models
     {
         public int Id { get; set; }
 
-        [Required, MaxLength(100)]
+        [Required, MaxLength(200)]
         public string Title { get; set; } = string.Empty;
 
         [Required, MaxLength(800)]
