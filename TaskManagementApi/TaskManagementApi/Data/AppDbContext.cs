@@ -31,6 +31,18 @@ namespace TaskManagementApi.Data
                   .OnDelete(DeleteBehavior.SetNull);
             });
 
+            // Test Data
+            // Values must be constant (no DateTime.Now) or EF creates a new migration every time.
+            modelBuilder.Entity<Project>().HasData(
+                new Project { Id = 1, Name = "Website", Description = "Company website redesign", CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc) },
+                new Project { Id = 2, Name = "Mobile App", Description = "iOS and Android app", CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, DateTimeKind.Utc) }
+            );
+
+            modelBuilder.Entity<User>().HasData(
+                new User { Id = 1, Name = "Nino", Email = "nino@gmail.com" },
+                new User { Id = 2, Name = "Giorgi", Email = "giorgi@gmail.com" }
+            );
+
         }
     
         public DbSet<User> Users => Set<User>();

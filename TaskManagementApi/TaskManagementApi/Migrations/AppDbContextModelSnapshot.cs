@@ -49,6 +49,22 @@ namespace TaskManagementApi.Migrations
                         .IsUnique();
 
                     b.ToTable("Projects");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "Company website redesign",
+                            Name = "Website"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc),
+                            Description = "iOS and Android app",
+                            Name = "Mobile App"
+                        });
                 });
 
             modelBuilder.Entity("TaskManagementApi.Models.TaskItem", b =>
@@ -123,6 +139,20 @@ namespace TaskManagementApi.Migrations
                         .IsUnique();
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Email = "nino@gmail.com",
+                            Name = "Nino"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Email = "giorgi@gmail.com",
+                            Name = "Giorgi"
+                        });
                 });
 
             modelBuilder.Entity("TaskManagementApi.Models.TaskItem", b =>

@@ -97,7 +97,7 @@ namespace TaskManagementApi.Services
             task.Description = taskItem.Description;
             task.Title = taskItem.Title;
             task.Priority = taskItem.Priority;
-            task.DueDate = taskItem.DueDate;
+            task.DueDate = taskItem.DueDate!.Value;
             task.Status = taskItem.Status;
             task.AssigneeId = taskItem.AssigneeId;
             task.ProjectId = taskItem.ProjectId;
@@ -114,7 +114,7 @@ namespace TaskManagementApi.Services
                 Title = createTask.Title.Trim(),
                 Description = createTask.Description,
                 Priority = createTask.Priority,
-                DueDate = createTask.DueDate,
+                DueDate = createTask.DueDate!.Value,
                 Status = createTask.Status,
                 ProjectId = createTask.ProjectId,
                 AssigneeId = createTask.AssigneeId
