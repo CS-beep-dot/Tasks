@@ -1,5 +1,13 @@
 @TaskManagementApi_HostAddress = http://localhost:5264
 
+# Seeded data (see AppDbContext.OnModelCreating):
+#   Projects: 1 = Website, 2 = Mobile App
+#   Users:    1 = Nino,    2 = Giorgi
+#
+# Task ids come from a SQL identity column and are never reused.
+# The id-based requests below (1, 2) only match on a fresh database.
+# After that, use the ids returned by the POST requests.
+
 GET {{TaskManagementApi_HostAddress}}/api/tasks
 Accept: application/json
 
@@ -16,7 +24,9 @@ Content-Type: application/json
   "description": "Cover create, update, delete and missing task",
   "status": 1,
   "priority": 2,
-  "dueDate": "2026-12-05T00:00:00Z"
+  "dueDate": "2026-12-05T00:00:00Z",
+  "projectId": 1,
+  "assigneeId": 1
 }
 
 ###
@@ -29,7 +39,8 @@ Content-Type: application/json
   "description": "Document the endpoints and how to run the tests",
   "status": 0,
   "priority": 1,
-  "dueDate": "2026-12-01T00:00:00Z"
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 2
 }
 
 ###
@@ -38,7 +49,7 @@ GET {{TaskManagementApi_HostAddress}}/api/tasks/1
 ###
 DELETE {{TaskManagementApi_HostAddress}}/api/tasks/1
 
-### 
+###
 PUT {{TaskManagementApi_HostAddress}}/api/tasks/2
 Content-Type: application/json
 
@@ -47,7 +58,9 @@ Content-Type: application/json
   "description": "Document the endpoints and how to run the tests",
   "status": 0,
   "priority": 1,
-  "dueDate": "2026-12-01T00:00:00Z"
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 2,
+  "assigneeId": 2
 }
 
 ### ---------- 404: unknown ID ----------
@@ -55,16 +68,17 @@ Content-Type: application/json
 ### GET unknown id (expect 404)
 GET {{TaskManagementApi_HostAddress}}/api/tasks/999
 
-### PUT unknown id (expect 404)
+### PUT unknown id (expect 404) - body must be valid, otherwise you get 400 instead
 PUT {{TaskManagementApi_HostAddress}}/api/tasks/999
 Content-Type: application/json
 
 {
   "title": "Does not exist",
-  "description": "",
+  "description": "Valid body, unknown id",
   "status": 0,
   "priority": 0,
-  "dueDate": "2026-12-01T00:00:00Z"
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 1
 }
 
 ### DELETE unknown id (expect 404)
@@ -87,7 +101,8 @@ Content-Type: application/json
   "description": "Blank title",
   "status": 0,
   "priority": 0,
-  "dueDate": "2026-12-01T00:00:00Z"
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 1
 }
 
 ### POST with a missing dueDate (expect 400)
@@ -96,9 +111,10 @@ Content-Type: application/json
 
 {
   "title": "No due date",
-  "description": "",
+  "description": "dueDate is missing",
   "status": 0,
-  "priority": 0
+  "priority": 0,
+  "projectId": 1
 }
 
 ### POST with an invalid status (expect 400)
@@ -107,10 +123,11 @@ Content-Type: application/json
 
 {
   "title": "Bad status",
-  "description": "",
+  "description": "status 99 does not exist",
   "status": 99,
   "priority": 0,
-  "dueDate": "2026-12-01T00:00:00Z"
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 1
 }
 
 ### PUT with an empty title (expect 400)
@@ -119,13 +136,55 @@ Content-Type: application/json
 
 {
   "title": "",
-  "description": "",
+  "description": "Blank title",
+  "status": 0,
+  "priority": 0,
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 1
+}
+
+### ---------- 400: project / assignee references ----------
+
+### POST without projectId (expect 400)
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "No project",
+  "description": "projectId is missing",
   "status": 0,
   "priority": 0,
   "dueDate": "2026-12-01T00:00:00Z"
 }
 
-### ---------- Status filter ----------
+### POST with a project that does not exist (expect 400 "Project 999 does not exist.")
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Unknown project",
+  "description": "projectId 999",
+  "status": 0,
+  "priority": 0,
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 999
+}
+
+### POST with an assignee that does not exist (expect 400 "User 999 does not exist.")
+POST {{TaskManagementApi_HostAddress}}/api/tasks
+Content-Type: application/json
+
+{
+  "title": "Unknown assignee",
+  "description": "assigneeId 999",
+  "status": 0,
+  "priority": 0,
+  "dueDate": "2026-12-01T00:00:00Z",
+  "projectId": 1,
+  "assigneeId": 999
+}
+
+### ---------- Filters ----------
 
 ### Filter by InProgress (expect 200 and only matching tasks)
 GET {{TaskManagementApi_HostAddress}}/api/tasks?status=InProgress
@@ -136,6 +195,8 @@ GET {{TaskManagementApi_HostAddress}}/api/tasks?status=Completed
 ### Invalid status filter (expect 400)
 GET {{TaskManagementApi_HostAddress}}/api/tasks?status=abc
 
+### Filter by assignee
+GET {{TaskManagementApi_HostAddress}}/api/tasks?assigneeId=1
 
-###
-GET /api/tasks?page=1&pageSize=5
+### Paging
+GET {{TaskManagementApi_HostAddress}}/api/tasks?page=1&pageSize=5

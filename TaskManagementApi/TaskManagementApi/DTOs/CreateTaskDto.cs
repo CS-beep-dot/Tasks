@@ -17,7 +17,9 @@ namespace TaskManagementApi.DTOs
 
         [EnumDataType(typeof(TaskPriority))]
         public TaskPriority Priority { get; set; }
-        public DateTime DueDate { get; set; }
+        // Nullable + [Required]: a plain DateTime would silently become 0001-01-01 when missing
+        [Required]
+        public DateTime? DueDate { get; set; }
 
         [Range(1, int.MaxValue)]
         public int ProjectId { get; set; }  
