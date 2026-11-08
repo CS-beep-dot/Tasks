@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="LinqReporting.Tests/LinqReporting.Tests.csproj" />
+  <Project Path="LinqReporting/LinqReporting.csproj" />
+</Solution>
