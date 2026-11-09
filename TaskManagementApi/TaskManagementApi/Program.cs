@@ -39,6 +39,7 @@ namespace TaskManagementApi
             app.MapControllers();
 
             app.Run();
+
         }
     }
 }
