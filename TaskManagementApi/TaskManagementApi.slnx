@@ -1,4 +1,7 @@
 <Solution>
+  <Project Path="TaskManagementApi.Application/TaskManagementApi.Application.csproj" Id="09e97876-c0fc-4c86-a824-02c1f0f28a36" />
+  <Project Path="TaskManagementApi.Domain/TaskManagementApi.Domain.csproj" Id="695369da-d379-48ce-9b02-27d585dc7dc5" />
+  <Project Path="TaskManagementApi.Infrastructure/TaskManagementApi.Infrastructure.csproj" Id="6b4ec59b-387e-4461-9006-dce5319533f5" />
   <Project Path="TaskManagementApi.Tests/TaskManagementApi.Tests.csproj" Id="fd339d18-508c-4882-abf7-1f57c250895a" />
   <Project Path="TaskManagementApi/TaskManagementApi.csproj" />
 </Solution>
