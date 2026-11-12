@@ -1,7 +1,7 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
 using TaskManagementApi.DTOs;
-using TaskManagementApi.Models;
+using TaskManagementApi.Domain.Entities;
 
 namespace TaskManagementApi.Tests
 {

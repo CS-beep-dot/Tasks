@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace TaskManagementApi.Migrations
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
+namespace TaskManagementApi.Infrastructure.Persistence.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration
@@ -71,11 +73,23 @@ namespace TaskManagementApi.Migrations
                         onDelete: ReferentialAction.SetNull);
                 });
 
-            migrationBuilder.CreateIndex(
-                name: "IX_Projects_Name",
+            migrationBuilder.InsertData(
                 table: "Projects",
-                column: "Name",
-                unique: true);
+                columns: new[] { "Id", "CreatedAt", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc), "Company website redesign", "Website" },
+                    { 2, new DateTime(2026, 11, 1, 0, 0, 0, 0, DateTimeKind.Utc), "iOS and Android app", "Mobile App" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "Email", "Name" },
+                values: new object[,]
+                {
+                    { 1, "nino@gmail.com", "Nino" },
+                    { 2, "giorgi@gmail.com", "Giorgi" }
+                });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Tasks_AssigneeId",
@@ -86,17 +100,6 @@ namespace TaskManagementApi.Migrations
                 name: "IX_Tasks_ProjectId",
                 table: "Tasks",
                 column: "ProjectId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Tasks_Status",
-                table: "Tasks",
-                column: "Status");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Users_Email",
-                table: "Users",
-                column: "Email",
-                unique: true);
         }
 
         /// <inheritdoc />

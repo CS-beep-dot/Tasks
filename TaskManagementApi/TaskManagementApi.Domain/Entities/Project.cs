@@ -1,10 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
-namespace TaskManagementApi.Models
+namespace TaskManagementApi.Domain.Entities
 {
 
-    [Index(nameof(Name), IsUnique = true)]
+    //[Index(nameof(Name), IsUnique = true)]
     public class Project
     {
         public int Id { get; set; }

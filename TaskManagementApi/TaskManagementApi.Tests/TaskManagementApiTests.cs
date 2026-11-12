@@ -2,7 +2,7 @@
 
 //﻿using System.ComponentModel.DataAnnotations;
 //using TaskManagementApi.DTOs;
-//using TaskManagementApi.Models;
+//using TaskManagementApi.Domain.Entities
 //using TaskManagementApi.Services;
 
 //namespace TaskManagementApi.Tests

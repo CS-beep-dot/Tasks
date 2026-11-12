@@ -8,7 +8,7 @@ using Microsoft.Extensions.Hosting;
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TaskManagementApi.Data;
+using TaskManagementApi.Infrastructure.Persistence;
 
 namespace TaskManagementApi.Tests
 {
