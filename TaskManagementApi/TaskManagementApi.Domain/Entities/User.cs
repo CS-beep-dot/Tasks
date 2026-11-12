@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace TaskManagementApi.Models
+namespace TaskManagementApi.Domain.Entities
 {
     //[Index(nameof(Email), IsUnique = true)]
     public class User

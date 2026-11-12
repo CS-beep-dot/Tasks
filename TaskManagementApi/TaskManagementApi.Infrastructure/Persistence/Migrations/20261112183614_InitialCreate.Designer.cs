@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using TaskManagementApi.Data;
+using TaskManagementApi.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace TaskManagementApi.Migrations
+namespace TaskManagementApi.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261106102618_SeedProjectsAndUsers")]
-    partial class SeedProjectsAndUsers
+    [Migration("20261112183614_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace TaskManagementApi.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("TaskManagementApi.Models.Project", b =>
+            modelBuilder.Entity("TaskManagementApi.Domain.Entities.Project", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -48,9 +48,6 @@ namespace TaskManagementApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("Projects");
 
                     b.HasData(
@@ -70,7 +67,7 @@ namespace TaskManagementApi.Migrations
                         });
                 });
 
-            modelBuilder.Entity("TaskManagementApi.Models.TaskItem", b =>
+            modelBuilder.Entity("TaskManagementApi.Domain.Entities.TaskItem", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -113,12 +110,10 @@ namespace TaskManagementApi.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.HasIndex("Status");
-
                     b.ToTable("Tasks");
                 });
 
-            modelBuilder.Entity("TaskManagementApi.Models.User", b =>
+            modelBuilder.Entity("TaskManagementApi.Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -138,9 +133,6 @@ namespace TaskManagementApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
                     b.ToTable("Users");
 
                     b.HasData(
@@ -158,14 +150,14 @@ namespace TaskManagementApi.Migrations
                         });
                 });
 
-            modelBuilder.Entity("TaskManagementApi.Models.TaskItem", b =>
+            modelBuilder.Entity("TaskManagementApi.Domain.Entities.TaskItem", b =>
                 {
-                    b.HasOne("TaskManagementApi.Models.User", "Assignee")
+                    b.HasOne("TaskManagementApi.Domain.Entities.User", "Assignee")
                         .WithMany("AssignedTasks")
                         .HasForeignKey("AssigneeId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("TaskManagementApi.Models.Project", "Project")
+                    b.HasOne("TaskManagementApi.Domain.Entities.Project", "Project")
                         .WithMany("Tasks")
                         .HasForeignKey("ProjectId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -176,12 +168,12 @@ namespace TaskManagementApi.Migrations
                     b.Navigation("Project");
                 });
 
-            modelBuilder.Entity("TaskManagementApi.Models.Project", b =>
+            modelBuilder.Entity("TaskManagementApi.Domain.Entities.Project", b =>
                 {
                     b.Navigation("Tasks");
                 });
 
-            modelBuilder.Entity("TaskManagementApi.Models.User", b =>
+            modelBuilder.Entity("TaskManagementApi.Domain.Entities.User", b =>
                 {
                     b.Navigation("AssignedTasks");
                 });

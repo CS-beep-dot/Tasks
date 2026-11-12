@@ -1,5 +1,5 @@
 ﻿using TaskManagementApi.DTOs;
-using TaskManagementApi.Models;
+using TaskManagementApi.Domain.Entities;
 
 namespace TaskManagementApi.Services
 {

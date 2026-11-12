@@ -1,6 +1,6 @@
 
 using Microsoft.EntityFrameworkCore;
-using TaskManagementApi.Data;
+using TaskManagementApi.Infrastructure.Persistence;
 using TaskManagementApi.Services;
 
 namespace TaskManagementApi

@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using TaskManagementApi.Data;
+using TaskManagementApi.Infrastructure.Persistence;
 using TaskManagementApi.DTOs;
 using TaskManagementApi.Exceptions;
-using TaskManagementApi.Models;
+using TaskManagementApi.Domain.Entities;
 
 namespace TaskManagementApi.Services
 {
