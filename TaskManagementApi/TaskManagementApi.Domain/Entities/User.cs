@@ -1,9 +1,8 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace TaskManagementApi.Models
 {
-    [Index(nameof(Email), IsUnique = true)]
+    //[Index(nameof(Email), IsUnique = true)]
     public class User
     {
         public int Id { get; set; }

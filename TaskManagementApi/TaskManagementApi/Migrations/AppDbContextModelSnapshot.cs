@@ -45,9 +45,6 @@ namespace TaskManagementApi.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Name")
-                        .IsUnique();
-
                     b.ToTable("Projects");
 
                     b.HasData(
@@ -110,8 +107,6 @@ namespace TaskManagementApi.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.HasIndex("Status");
-
                     b.ToTable("Tasks");
                 });
 
@@ -134,9 +129,6 @@ namespace TaskManagementApi.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
 
                     b.ToTable("Users");
 
