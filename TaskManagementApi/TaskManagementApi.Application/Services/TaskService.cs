@@ -1,30 +1,27 @@
-﻿using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TaskManagementApi.Infrastructure.Persistence;
-using TaskManagementApi.DTOs;
+﻿using TaskManagementApi.DTOs;
 using TaskManagementApi.Exceptions;
 using TaskManagementApi.Domain.Entities;
+using TaskManagementApi.Application.Repositories;
 
 namespace TaskManagementApi.Services
 {
-    public class TaskService : ITaskService
+    public class TaskService : ITaskRepository
     {
 
-        private readonly AppDbContext _db;
+        private readonly ITaskRepository _repo;
 
-        public TaskService(AppDbContext db)
+        public TaskService(ITaskRepository repo)
         {
-            _db = db;
+            _repo = repo;
         }
 
         //Helper for 
         private async Task EnsureReferencesExistAsync(int projectId, int? assigneeId)
         {
-            if (!await _db.Projects.AnyAsync(p => p.Id == projectId))
+            if (!await _repo.ProjectExistsAsync(projectId))
                 throw new InvalidReferenceException($"Project {projectId} does not exist.");
 
-            if (assigneeId != null && !await _db.Users.AnyAsync(u => u.Id == assigneeId))
+            if (assigneeId != null && !await _repo.UserExistsAsync(assigneeId.Value))
                 throw new InvalidReferenceException($"User {assigneeId} does not exist.");
         }
 
@@ -40,7 +37,7 @@ namespace TaskManagementApi.Services
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 100) pageSize = 100;
 
-            IQueryable<TaskItem> query = _db.Tasks.AsNoTracking();
+            IQueryable<TaskItem> query = _repo.Tasks.AsNoTracking();
 
             if (status != null)
             {
@@ -82,7 +79,7 @@ namespace TaskManagementApi.Services
 
         public async Task<TaskResponseDto?> GetTaskById(int id)
         {
-            var task = await _db.Tasks.AsNoTracking().FirstOrDefaultAsync(t => t.Id == id);
+            var task = await _repo.GetTaskById(id);
 
             if (task == null)
                 return null;
@@ -93,7 +90,7 @@ namespace TaskManagementApi.Services
         {
             await EnsureReferencesExistAsync(taskItem.ProjectId, taskItem.AssigneeId);
 
-            var task = await _db.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+            var task = await _repo.Tasks.FirstOrDefaultAsync(t => t.Id == id);
 
             if (task == null)
                 return null;
@@ -106,7 +103,7 @@ namespace TaskManagementApi.Services
             task.AssigneeId = taskItem.AssigneeId;
             task.ProjectId = taskItem.ProjectId;
 
-            await _db.SaveChangesAsync();
+            await _repo.SaveChangesAsync();
             return ToResponse(task);
         }
 
@@ -124,21 +121,21 @@ namespace TaskManagementApi.Services
                 AssigneeId = createTask.AssigneeId
             };
             
-            _db.Tasks.Add(task);
-            await _db.SaveChangesAsync();
+            _repo.Tasks.Add(task);
+            await _repo.SaveChangesAsync();
 
             return ToResponse(task);
         }
 
         public async Task<bool> DeleteTask(int id)
         {
-            var task = await _db.Tasks.FirstOrDefaultAsync(_t => _t.Id == id);
+            var task = await _repo.Tasks.FirstOrDefaultAsync(_t => _t.Id == id);
             
             if ( task == null ) 
                 return false;
 
-            _db.Tasks.Remove(task);
-            await _db.SaveChangesAsync();
+            _repo.Tasks.Remove(task);
+            await _repo.SaveChangesAsync();
 
             return true;
         }
