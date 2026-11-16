@@ -1,9 +1,8 @@
-﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using TaskManagementApi.DTOs;
-using TaskManagementApi.Exceptions;
+using TaskManagementApi.Application.DTOs;
+using TaskManagementApi.Application.Exceptions;
 using TaskManagementApi.Domain.Entities;
-using TaskManagementApi.Services;
+using TaskManagementApi.Application.Services;
 
 namespace TaskManagementApi.Controllers
 {

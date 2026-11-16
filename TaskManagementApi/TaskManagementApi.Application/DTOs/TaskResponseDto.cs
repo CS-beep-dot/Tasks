@@ -1,7 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
 using TaskManagementApi.Domain.Entities;
 
-namespace TaskManagementApi.DTOs
+namespace TaskManagementApi.Application.DTOs
 {
     public class TaskResponseDto
     {

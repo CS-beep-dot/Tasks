@@ -1,4 +1,4 @@
-﻿namespace TaskManagementApi.Exceptions
+﻿namespace TaskManagementApi.Application.Exceptions
 {
     public class InvalidReferenceException : Exception
     {
