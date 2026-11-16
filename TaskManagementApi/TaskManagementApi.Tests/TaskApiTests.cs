@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using TaskManagementApi.DTOs;
+using TaskManagementApi.Application.DTOs;
 using TaskManagementApi.Domain.Entities;
 
 namespace TaskManagementApi.Tests

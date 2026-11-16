@@ -1,7 +1,7 @@
-﻿using TaskManagementApi.DTOs;
+﻿using TaskManagementApi.Application.DTOs;
 using TaskManagementApi.Domain.Entities;
 
-namespace TaskManagementApi.Services
+namespace TaskManagementApi.Application.Services
 {
     public interface ITaskService 
     {

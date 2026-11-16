@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using TaskManagementApi.Application.Repositories;
 using TaskManagementApi.Infrastructure.Persistence;
 using TaskManagementApi.Infrastructure.Repositories;
-using TaskManagementApi.Services;
+using TaskManagementApi.Application.Services;
 
 namespace TaskManagementApi
 {

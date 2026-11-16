@@ -1,9 +1,9 @@
-﻿using TaskManagementApi.DTOs;
-using TaskManagementApi.Exceptions;
+﻿using TaskManagementApi.Application.DTOs;
+using TaskManagementApi.Application.Exceptions;
 using TaskManagementApi.Domain.Entities;
 using TaskManagementApi.Application.Repositories;
 
-namespace TaskManagementApi.Services
+namespace TaskManagementApi.Application.Services
 {
     public class TaskService : ITaskService
     {

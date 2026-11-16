@@ -1,4 +1,4 @@
-﻿namespace TaskManagementApi.DTOs
+﻿namespace TaskManagementApi.Application.DTOs
 {
     public class PagedResult<T>
     {
