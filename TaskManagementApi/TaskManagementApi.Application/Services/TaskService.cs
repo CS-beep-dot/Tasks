@@ -5,7 +5,7 @@ using TaskManagementApi.Application.Repositories;
 
 namespace TaskManagementApi.Services
 {
-    public class TaskService : ITaskRepository
+    public class TaskService : ITaskService
     {
 
         private readonly ITaskRepository _repo;
@@ -37,40 +37,11 @@ namespace TaskManagementApi.Services
             if (pageSize < 1) pageSize = 10;
             if (pageSize > 100) pageSize = 100;
 
-            IQueryable<TaskItem> query = _repo.Tasks.AsNoTracking();
-
-            if (status != null)
-            {
-                query = query.Where(t => t.Status == status);
-            }
-
-            if (assigneeId != null)
-            {
-                query = query.Where(t => t.AssigneeId == assigneeId);
-            }
-
-            int total = await query.CountAsync();
-
-            var tasks = await query
-                .OrderBy(t => t.Id)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(t => new TaskResponseDto
-                {
-                    Id = t.Id,
-                    Title = t.Title,
-                    Description = t.Description,
-                    DueDate = t.DueDate,
-                    Priority = t.Priority,
-                    ProjectId = t.ProjectId,
-                    Status = t.Status,
-                    AssigneeId = t.AssigneeId,
-                })
-                .ToListAsync();
+            var (items, total) = await _repo.GetPageAsync(status, assigneeId, page, pageSize);
 
             return new PagedResult<TaskResponseDto>
             {
-                Items = tasks,
+                Items = items.Select(ToResponse).ToList(),
                 Page = page,
                 PageSize = pageSize,
                 TotalCount = total
@@ -79,7 +50,7 @@ namespace TaskManagementApi.Services
 
         public async Task<TaskResponseDto?> GetTaskById(int id)
         {
-            var task = await _repo.GetTaskById(id);
+            var task = await _repo.GetByIdAsync(id);
 
             if (task == null)
                 return null;
@@ -90,7 +61,7 @@ namespace TaskManagementApi.Services
         {
             await EnsureReferencesExistAsync(taskItem.ProjectId, taskItem.AssigneeId);
 
-            var task = await _repo.Tasks.FirstOrDefaultAsync(t => t.Id == id);
+            var task = await _repo.GetByIdForUpdateAsync(id);
 
             if (task == null)
                 return null;
@@ -121,7 +92,7 @@ namespace TaskManagementApi.Services
                 AssigneeId = createTask.AssigneeId
             };
             
-            _repo.Tasks.Add(task);
+            _repo.Add(task);
             await _repo.SaveChangesAsync();
 
             return ToResponse(task);
@@ -129,12 +100,12 @@ namespace TaskManagementApi.Services
 
         public async Task<bool> DeleteTask(int id)
         {
-            var task = await _repo.Tasks.FirstOrDefaultAsync(_t => _t.Id == id);
+            var task = await _repo.GetByIdForUpdateAsync(id);
             
             if ( task == null ) 
                 return false;
 
-            _repo.Tasks.Remove(task);
+            _repo.Remove(task);
             await _repo.SaveChangesAsync();
 
             return true;

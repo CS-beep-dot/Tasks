@@ -15,6 +15,10 @@ namespace TaskManagementApi.Infrastructure.Persistence
 
             base.OnModelCreating(modelBuilder);
 
+            modelBuilder.Entity<Project>().HasIndex(p => p.Name).IsUnique();
+            modelBuilder.Entity<User>().HasIndex(u => u.Email).IsUnique();
+            modelBuilder.Entity<TaskItem>().HasIndex(t => t.Status);
+
             modelBuilder.Entity<TaskItem>(e =>
             {
                 e.Property(t => t.Status).HasConversion<string>().HasMaxLength(20);
