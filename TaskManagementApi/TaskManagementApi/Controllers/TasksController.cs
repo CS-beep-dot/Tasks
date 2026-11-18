@@ -76,7 +76,7 @@ namespace TaskManagementApi.Controllers
             }  
         }
 
-        [Authorize(Policy = "CanDeleteProjects")]
+        
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTask(int id) 
         {
