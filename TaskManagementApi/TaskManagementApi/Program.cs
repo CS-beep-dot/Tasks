@@ -1,9 +1,13 @@
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.AspNetCore.Authorization;
 using TaskManagementApi.Application.Repositories;
+using TaskManagementApi.Application.Services;
 using TaskManagementApi.Infrastructure.Persistence;
 using TaskManagementApi.Infrastructure.Repositories;
-using TaskManagementApi.Application.Services;
 
 namespace TaskManagementApi
 {
@@ -12,6 +16,43 @@ namespace TaskManagementApi
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+
+            var issuer = builder.Configuration["Jwt:Issuer"]
+                         ?? throw new InvalidOperationException("Jwt:Issuer is missing.");
+            var audience = builder.Configuration["Jwt:Audience"]
+                           ?? throw new InvalidOperationException("Jwt:Audience is missing.");
+            var signingKey = builder.Configuration["Jwt:SigningKey"]
+                             ?? throw new InvalidOperationException("Jwt:SigningKey is missing.");
+
+            builder.Services
+                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.MapInboundClaims = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidIssuer = issuer,
+                        ValidateAudience = true,
+                        ValidAudience = audience,
+                        ValidateIssuerSigningKey = true,
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(signingKey)),
+                        ValidateLifetime = true,
+                        ClockSkew = TimeSpan.FromSeconds(30),
+                        NameClaimType = "sub",
+                        RoleClaimType = "role"
+                    };
+                });
+
+            builder.Services.AddAuthorization(options =>
+            {
+                options.FallbackPolicy = new AuthorizationPolicyBuilder()
+                    .RequireAuthenticatedUser()
+                    .Build();
+
+                options.AddPolicy("CanDeleteProjects", p => p.RequireRole("Admin"));
+                options.AddPolicy("CanAssignTask", p => p.RequireRole("Manager", "Admin"));
+            });
 
             // Add services to the container.
 
@@ -28,6 +69,7 @@ namespace TaskManagementApi
 
             var app = builder.Build();
 
+
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
@@ -36,8 +78,8 @@ namespace TaskManagementApi
 
             app.UseHttpsRedirection();
 
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 
