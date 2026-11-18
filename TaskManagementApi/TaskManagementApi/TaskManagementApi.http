@@ -12,11 +12,30 @@ GET {{TaskManagementApi_HostAddress}}/api/tasks
 Accept: application/json
 
 ###
+#generate token from here.
+POST {{TaskManagementApi_HostAddress}}/api/dev/token
+Content-Type: application/json
+
+{
+  "userId": 1,
+  "role": "Manager"
+}
+###
+#paste token generated from api/dev/token request
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJUYXNrTWFuYWdlbWVudEFwaSIsImlzcyI6IlRhc2tNYW5hZ2VtZW50QXBpLkRldiIsImV4cCI6MTc5NTAwODYzMCwic3ViIjoiMSIsInJvbGUiOiJNYW5hZ2VyIiwiaWF0IjoxNzk1MDA2ODMwLCJuYmYiOjE3OTUwMDY4MzB9.AcGOb-MfKMlzYnqpxXfh66B-3qo_CmCg_0EHzyz3Xmk
+
+###
 GET {{TaskManagementApi_HostAddress}}/api/tasks?status=Pending
+Authorization: Bearer {{token}}
+
+###
+GET {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{token}}
 
 ###
 
 POST {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -32,6 +51,7 @@ Content-Type: application/json
 ###
 
 POST {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
@@ -48,6 +68,7 @@ GET {{TaskManagementApi_HostAddress}}/api/tasks/1
 
 ###
 DELETE {{TaskManagementApi_HostAddress}}/api/tasks/1
+Authorization: Bearer {{token}}
 
 ###
 PUT {{TaskManagementApi_HostAddress}}/api/tasks/2

@@ -18,6 +18,10 @@ namespace TaskManagementApi.Tests
 
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.UseSetting("Jwt:Issuer", "TestIssuer");
+            builder.UseSetting("Jwt:Audience", "TestAudience");
+            builder.UseSetting("Jwt:SigningKey", "test-only-signing-key-at-least-32-characters!!");
+
             builder.ConfigureServices(services =>
             {
                 services.RemoveAll<DbContextOptions<AppDbContext>>();

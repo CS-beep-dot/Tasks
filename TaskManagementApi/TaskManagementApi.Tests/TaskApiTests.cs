@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using TaskManagementApi.Application.DTOs;
 using TaskManagementApi.Domain.Entities;
@@ -10,9 +11,24 @@ namespace TaskManagementApi.Tests
 
         private readonly HttpClient _client;
 
+        // DELETE requires the Admin role (CanDeleteProjects). Only DELETE uses this token.
+        private readonly AuthenticationHeaderValue _adminAuth;
+
         public TaskApiTests(ApiFactory factory)
         {
             _client = factory.CreateClient();
+
+            var token = TestTokens.Create(factory, userId: 1, role: "Manager");
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            _adminAuth = new AuthenticationHeaderValue("Bearer", TestTokens.Create(factory, userId: 1, role: "Admin"));
+        }
+
+        private Task<HttpResponseMessage> DeleteAsAdminAsync(string url)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Delete, url);
+            request.Headers.Authorization = _adminAuth;
+            return _client.SendAsync(request);
         }
 
         //helper static
@@ -92,6 +108,9 @@ namespace TaskManagementApi.Tests
             if (method == "PUT")
                 request.Content = JsonContent.Create(ValidBody());
 
+            if (method == "DELETE")
+                request.Headers.Authorization = _adminAuth;
+
             var response = await _client.SendAsync(request);
 
             Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
@@ -102,7 +121,7 @@ namespace TaskManagementApi.Tests
         {
             var created = await CreateTaskAsync();
 
-            var delete = await _client.DeleteAsync($"/api/tasks/{created.Id}");
+            var delete = await DeleteAsAdminAsync($"/api/tasks/{created.Id}");
             Assert.Equal(HttpStatusCode.NoContent, delete.StatusCode);
 
             var get = await _client.GetAsync($"/api/tasks/{created.Id}");
@@ -167,5 +186,7 @@ namespace TaskManagementApi.Tests
             Assert.Contains(page.Items, item => item.Id == created.Id);
               
         }
+
+      
     }
 }
