@@ -47,7 +47,7 @@ dotnet ef database update --project TaskManagementApi.Infrastructure --startup-p
 | GET | `/api/tasks/{id}` | 200 | 404 unknown ID |
 | POST | `/api/tasks` | 201 with `Location` header | 400 invalid body, unknown project or user |
 | PUT | `/api/tasks/{id}` | 200 | 404 unknown ID, 400 invalid body, unknown project or user |
-| DELETE | `/api/tasks/{id}` | 204 | 404 unknown ID |
+| DELETE | `/api/tasks/{id}` | 204 | 404 unknown ID, 401 no token, 403 role is not `Manager` or `Admin` |
 
 ### Task fields
 | Field | Notes |

@@ -78,7 +78,8 @@ namespace TaskManagementApi.Controllers
 
         
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteTask(int id) 
+        [Authorize(Policy = "CanDeleteTasks")]
+        public async Task<IActionResult> DeleteTask(int id)
         {
             var deleted = await _taskService.DeleteTask(id);
 

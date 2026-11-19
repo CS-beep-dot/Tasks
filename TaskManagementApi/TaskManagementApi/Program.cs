@@ -52,6 +52,7 @@ namespace TaskManagementApi
 
                 options.AddPolicy("CanDeleteProjects", p => p.RequireRole("Admin"));
                 options.AddPolicy("CanAssignTasks", p => p.RequireRole("Manager", "Admin"));
+                options.AddPolicy("CanDeleteTasks", p => p.RequireRole("Manager", "Admin"));
             });
 
             // Add services to the container.
