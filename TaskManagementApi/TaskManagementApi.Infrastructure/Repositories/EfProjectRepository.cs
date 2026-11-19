@@ -26,3 +26,4 @@ namespace TaskManagementApi.Infrastructure.Repositories
 
         public Task SaveChangesAsync() => _db.SaveChangesAsync();
     }
+}

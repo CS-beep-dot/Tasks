@@ -11,7 +11,8 @@ namespace TaskManagementApi.Tests
 
         private readonly HttpClient _client;
 
-        // DELETE requires the Admin role (CanDeleteProjects). Only DELETE uses this token.
+        // DELETE requires Manager or Admin (CanDeleteTasks). The default client is Manager;
+        // the DELETE tests use this Admin token so the Admin path is covered too.
         private readonly AuthenticationHeaderValue _adminAuth;
 
         public TaskApiTests(ApiFactory factory)

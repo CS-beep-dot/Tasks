@@ -7,6 +7,6 @@ namespace TaskManagementApi.Application.Services
 {
     public interface IProjectService
     {
-        Task<bool> DeleteProject(int id);
+        Task<bool> DeleteProjectAsync(int id);
     }
 }

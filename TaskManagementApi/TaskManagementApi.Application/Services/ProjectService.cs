@@ -13,7 +13,7 @@ namespace TaskManagementApi.Application.Services
             _repository = projectRepository;
         }
 
-        public async Task<bool> DeleteProject(int id)
+        public async Task<bool> DeleteProjectAsync(int id)
         {
             var project = await _repository.GetByIdAsync(id);
 
@@ -26,5 +26,6 @@ namespace TaskManagementApi.Application.Services
             await _repository.SaveChangesAsync();
             return true;
         }
+
     }
 }
