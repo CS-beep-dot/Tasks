@@ -20,7 +20,6 @@ namespace TaskManagementApi.Controllers
 
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<ActionResult<PagedResult<TaskResponseDto>>> GetAllTasks(
             [FromQuery] TaskItemStatus? status,
             [FromQuery] int? assigneeId,
@@ -32,7 +31,6 @@ namespace TaskManagementApi.Controllers
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous]
         public async Task<ActionResult<TaskResponseDto>> GetTaskById(int id)
         {
             var task = await _taskService.GetTaskById(id);
