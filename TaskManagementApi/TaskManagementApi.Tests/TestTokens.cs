@@ -11,17 +11,27 @@ namespace TaskManagementApi.Tests
 {
     public static class TestTokens
     {
-        public static string Create(ApiFactory factory, int userId, string role)
+        public static string Create(ApiFactory factory, int userId, string role,
+        DateTime? expires = null,
+        string? signingKey = null,
+        string? issuer = null,
+        string? audience = null)
         {
             var config = factory.Services.GetRequiredService<IConfiguration>();
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:SigningKey"]!));
+            var keyText = signingKey ?? config["Jwt:SigningKey"]!;
+
+            var exp = expires ?? DateTime.UtcNow.AddMinutes(30);
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyText));
 
             var descriptor = new SecurityTokenDescriptor
             {
-                Issuer = config["Jwt:Issuer"],
-                Audience = config["Jwt:Audience"],
-                Expires = DateTime.UtcNow.AddMinutes(30),
+                Issuer = issuer ?? config["Jwt:Issuer"],
+                Audience = audience ?? config["Jwt:Audience"],
+                Expires = exp,
+                NotBefore = exp.AddMinutes(-30),
+                IssuedAt = exp.AddMinutes(-30),
                 Subject = new ClaimsIdentity(new[]
                 {
                     new Claim("sub", userId.ToString()),
