@@ -16,13 +16,11 @@ namespace TaskManagementApi.Application.Services
         }
 
         //Helper for 
-        private async Task EnsureReferencesExistAsync(int projectId, int? assigneeId)
+        private async Task EnsureReferencesExistAsync(int projectId)
         {
             if (!await _repo.ProjectExistsAsync(projectId))
                 throw new InvalidReferenceException($"Project {projectId} does not exist.");
 
-            if (assigneeId != null && !await _repo.UserExistsAsync(assigneeId.Value))
-                throw new InvalidReferenceException($"User {assigneeId} does not exist.");
         }
 
 
@@ -59,7 +57,7 @@ namespace TaskManagementApi.Application.Services
         }
         public async Task<TaskResponseDto?> UpdateTask(int id, UpdateTaskDto taskItem)
         {
-            await EnsureReferencesExistAsync(taskItem.ProjectId, taskItem.AssigneeId);
+            await EnsureReferencesExistAsync(taskItem.ProjectId);
 
             var task = await _repo.GetByIdForUpdateAsync(id);
 
@@ -71,7 +69,6 @@ namespace TaskManagementApi.Application.Services
             task.Priority = taskItem.Priority;
             task.DueDate = taskItem.DueDate!.Value;
             task.Status = taskItem.Status;
-            task.AssigneeId = taskItem.AssigneeId;
             task.ProjectId = taskItem.ProjectId;
 
             await _repo.SaveChangesAsync();
@@ -80,7 +77,7 @@ namespace TaskManagementApi.Application.Services
 
         public async Task<TaskResponseDto> CreateTask(CreateTaskDto createTask)
         {
-            await EnsureReferencesExistAsync(createTask.ProjectId, createTask.AssigneeId);
+            await EnsureReferencesExistAsync(createTask.ProjectId);
             var task = new TaskItem()
             {
                 Title = createTask.Title.Trim(),
@@ -89,7 +86,6 @@ namespace TaskManagementApi.Application.Services
                 DueDate = createTask.DueDate!.Value,
                 Status = createTask.Status,
                 ProjectId = createTask.ProjectId,
-                AssigneeId = createTask.AssigneeId
             };
             
             _repo.Add(task);
@@ -109,6 +105,23 @@ namespace TaskManagementApi.Application.Services
             await _repo.SaveChangesAsync();
 
             return true;
+        }
+
+        public async Task<TaskResponseDto?> AssignTask(int taskId, int? assigneeId)
+        {
+            var task = await _repo.GetByIdForUpdateAsync(taskId);
+
+            if (task == null)
+                return null;
+
+            if (assigneeId != null && !await _repo.UserExistsAsync(assigneeId.Value))
+                throw new InvalidReferenceException($"Employee {assigneeId} does not exist.");
+
+            task.AssigneeId = assigneeId;
+
+            await _repo.SaveChangesAsync();
+
+            return ToResponse(task);
         }
 
         //this returns TaskResponseDto for our responses on client's side

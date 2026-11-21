@@ -87,5 +87,24 @@ namespace TaskManagementApi.Controllers
             return NoContent();
         }
 
+        [HttpPut("{id}/assignee")]
+        [Authorize(Policy = "CanAssignTasks")]
+        public async Task<ActionResult> UpdateAssignee(int id, AssignTaskDto dto)
+        {
+            try
+            {
+                var updated = await _taskService.AssignTask(id, dto.AssigneeId);
+
+                if (updated is null)
+                    return NotFound();
+
+                return Ok(updated);
+            }
+            catch (InvalidReferenceException ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
     }
 }

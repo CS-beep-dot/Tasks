@@ -8,34 +8,57 @@
 # The id-based requests below (1, 2) only match on a fresh database.
 # After that, use the ids returned by the POST requests.
 
+### Get a Manager token
+# @name managerLogin
+POST {{TaskManagementApi_HostAddress}}/api/dev/token
+Content-Type: application/json
+
+{ "userId": 1, "role": "Manager" }
+
+### Get a User token
+# @name userLogin
+POST {{TaskManagementApi_HostAddress}}/api/dev/token
+Content-Type: application/json
+
+{ "userId": 2, "role": "User" }
+
+### Assign task as Manager -> 200
+PUT {{TaskManagementApi_HostAddress}}/api/tasks/1/assignee
+Authorization: Bearer {{managerLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "assigneeId": 2 }
+
+### Assign task as User -> 403
+PUT {{TaskManagementApi_HostAddress}}/api/tasks/1/assignee
+Authorization: Bearer {{userLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "assigneeId": 2 }
+
+### Unknown employee -> 400
+PUT {{TaskManagementApi_HostAddress}}/api/tasks/1/assignee
+Authorization: Bearer {{managerLogin.response.body.$.token}}
+Content-Type: application/json
+
+{ "assigneeId": 99999 }
+
+###
 GET {{TaskManagementApi_HostAddress}}/api/tasks
 Accept: application/json
 
 ###
-#generate token from here.
-POST {{TaskManagementApi_HostAddress}}/api/dev/token
-Content-Type: application/json
-
-{
-  "userId": 1,
-  "role": "Manager"
-}
-###
-#paste token generated from api/dev/token request
-@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJUYXNrTWFuYWdlbWVudEFwaSIsImlzcyI6IlRhc2tNYW5hZ2VtZW50QXBpLkRldiIsImV4cCI6MTc5NTAwODYzMCwic3ViIjoiMSIsInJvbGUiOiJNYW5hZ2VyIiwiaWF0IjoxNzk1MDA2ODMwLCJuYmYiOjE3OTUwMDY4MzB9.AcGOb-MfKMlzYnqpxXfh66B-3qo_CmCg_0EHzyz3Xmk
-
-###
 GET {{TaskManagementApi_HostAddress}}/api/tasks?status=Pending
-Authorization: Bearer {{token}}
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 
 ###
 GET {{TaskManagementApi_HostAddress}}/api/tasks
-Authorization: Bearer {{token}}
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 
 ###
 
 POST {{TaskManagementApi_HostAddress}}/api/tasks
-Authorization: Bearer {{token}}
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -44,14 +67,13 @@ Content-Type: application/json
   "status": 1,
   "priority": 2,
   "dueDate": "2026-12-05T00:00:00Z",
-  "projectId": 1,
-  "assigneeId": 1
+  "projectId": 1
 }
 
 ###
 
 POST {{TaskManagementApi_HostAddress}}/api/tasks
-Authorization: Bearer {{token}}
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -68,10 +90,11 @@ GET {{TaskManagementApi_HostAddress}}/api/tasks/1
 
 ###
 DELETE {{TaskManagementApi_HostAddress}}/api/tasks/1
-Authorization: Bearer {{token}}
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 
 ###
 PUT {{TaskManagementApi_HostAddress}}/api/tasks/2
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -80,8 +103,7 @@ Content-Type: application/json
   "status": 0,
   "priority": 1,
   "dueDate": "2026-12-01T00:00:00Z",
-  "projectId": 2,
-  "assigneeId": 2
+  "projectId": 2
 }
 
 ### ---------- 404: unknown ID ----------
@@ -91,6 +113,7 @@ GET {{TaskManagementApi_HostAddress}}/api/tasks/999
 
 ### PUT unknown id (expect 404) - body must be valid, otherwise you get 400 instead
 PUT {{TaskManagementApi_HostAddress}}/api/tasks/999
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -104,17 +127,20 @@ Content-Type: application/json
 
 ### DELETE unknown id (expect 404)
 DELETE {{TaskManagementApi_HostAddress}}/api/tasks/999
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 
 ### GET the task deleted earlier (expect 404)
 GET {{TaskManagementApi_HostAddress}}/api/tasks/1
 
 ### DELETE the same task again (expect 404)
 DELETE {{TaskManagementApi_HostAddress}}/api/tasks/1
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 
 ### ---------- 400: invalid requests ----------
 
 ### POST with an empty title (expect 400)
 POST {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -128,6 +154,7 @@ Content-Type: application/json
 
 ### POST with a missing dueDate (expect 400)
 POST {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -140,6 +167,7 @@ Content-Type: application/json
 
 ### POST with an invalid status (expect 400)
 POST {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -153,6 +181,7 @@ Content-Type: application/json
 
 ### PUT with an empty title (expect 400)
 PUT {{TaskManagementApi_HostAddress}}/api/tasks/2
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -164,10 +193,11 @@ Content-Type: application/json
   "projectId": 1
 }
 
-### ---------- 400: project / assignee references ----------
+### ---------- 400: project references ----------
 
 ### POST without projectId (expect 400)
 POST {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -180,6 +210,7 @@ Content-Type: application/json
 
 ### POST with a project that does not exist (expect 400 "Project 999 does not exist.")
 POST {{TaskManagementApi_HostAddress}}/api/tasks
+Authorization: Bearer {{managerLogin.response.body.$.token}}
 Content-Type: application/json
 
 {
@@ -189,20 +220,6 @@ Content-Type: application/json
   "priority": 0,
   "dueDate": "2026-12-01T00:00:00Z",
   "projectId": 999
-}
-
-### POST with an assignee that does not exist (expect 400 "User 999 does not exist.")
-POST {{TaskManagementApi_HostAddress}}/api/tasks
-Content-Type: application/json
-
-{
-  "title": "Unknown assignee",
-  "description": "assigneeId 999",
-  "status": 0,
-  "priority": 0,
-  "dueDate": "2026-12-01T00:00:00Z",
-  "projectId": 1,
-  "assigneeId": 999
 }
 
 ### ---------- Filters ----------
