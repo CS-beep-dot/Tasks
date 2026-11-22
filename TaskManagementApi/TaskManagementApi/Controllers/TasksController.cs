@@ -12,10 +12,12 @@ namespace TaskManagementApi.Controllers
     public class TasksController : ControllerBase
     {
         private readonly ITaskService _taskService;
+        private readonly IAuthorizationService _authorizationService;
 
-        public TasksController(ITaskService taskService)
+        public TasksController(ITaskService taskService, IAuthorizationService authorizationService)
         {
             _taskService = taskService;
+            _authorizationService = authorizationService;
         }
 
 
@@ -44,6 +46,12 @@ namespace TaskManagementApi.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<TaskResponseDto>> UpdateTask(int id, UpdateTaskDto updateTask)
         {
+            var existing = await _taskService.GetTaskById(id);
+            if (existing is null) return NotFound();
+
+            var auth = await _authorizationService.AuthorizeAsync(User, existing, "CanUpdateTasks");
+            if (!auth.Succeeded) return Forbid();
+
             try
             {
                 var updated = await _taskService.UpdateTask(id, updateTask);

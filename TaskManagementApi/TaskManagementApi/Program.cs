@@ -1,11 +1,12 @@
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Microsoft.AspNetCore.Authorization;
 using TaskManagementApi.Application.Repositories;
 using TaskManagementApi.Application.Services;
+using TaskManagementApi.Authorization;
 using TaskManagementApi.Infrastructure.Persistence;
 using TaskManagementApi.Infrastructure.Repositories;
 
@@ -53,6 +54,7 @@ namespace TaskManagementApi
                 options.AddPolicy("CanDeleteProjects", p => p.RequireRole("Admin"));
                 options.AddPolicy("CanAssignTasks", p => p.RequireRole("Manager", "Admin"));
                 options.AddPolicy("CanDeleteTasks", p => p.RequireRole("Manager", "Admin"));
+                options.AddPolicy("CanUpdateTasks", p => p.Requirements.Add(new CanUpdateTaskRequirement()));
             });
 
             // Add services to the container.
@@ -62,6 +64,8 @@ namespace TaskManagementApi
             builder.Services.AddOpenApi();
 
             //service registration
+            builder.Services.AddSingleton<IAuthorizationHandler, CanUpdateTaskHandler>();
+
             builder.Services.AddScoped<ITaskService, TaskService>();
             builder.Services.AddScoped<ITaskRepository, EfTaskRepository>();
 
