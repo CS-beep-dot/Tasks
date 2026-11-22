@@ -13,6 +13,8 @@ namespace TaskManagementApi.Application.Services
         Task<TaskResponseDto?> GetTaskById(int id);
         Task<TaskResponseDto?> UpdateTask(int id, UpdateTaskDto taskItem);
         Task<TaskResponseDto> CreateTask(CreateTaskDto createTask);
+
+        Task<TaskResponseDto?> AssignTask(int id, int? assigneeId);
         Task<bool> DeleteTask(int id);
     }
 }

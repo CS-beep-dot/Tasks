@@ -24,7 +24,5 @@ namespace TaskManagementApi.Application.DTOs
         [Range(1, int.MaxValue)]
         public int ProjectId { get; set; }  
 
-        public int? AssigneeId { get; set; }
-
     }
 }

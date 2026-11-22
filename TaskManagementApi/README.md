@@ -1,6 +1,6 @@
 # Task Management REST API
 
-ASP.NET Core Web API for managing tasks. Data is stored in SQL Server through EF Core, so it survives application restarts.
+ASP.NET Core Web API for managing tasks. Data is stored in SQL Server through EF Core, so it survives application restarts. Endpoints are protected with JWT bearer tokens and role-based policies; see [SECURITY.md](SECURITY.md) for details.
 
 ## Requirements
 - .NET SDK 10
@@ -18,7 +18,39 @@ Run from this folder (the one containing `TaskManagementApi.slnx`).
 
 It is in `TaskManagementApi/appsettings.json` under `ConnectionStrings:AppDbConnection`. The default uses LocalDB with Windows authentication, so it contains no password. To use another server, change it there.
 
-**2. Create the database**
+**2. Set the JWT signing key (private, once per machine)**
+
+The key that signs tokens is a secret, so it is **not** in `appsettings.json` or in git. Store it with .NET User Secrets, which keeps it in your user profile, outside the repository.
+
+Generate a random key (at least 32 characters). Either of these works:
+
+```bash
+openssl rand -base64 48
+```
+
+```powershell
+[Convert]::ToBase64String([System.Security.Cryptography.RandomNumberGenerator]::GetBytes(48))
+```
+
+The PowerShell command needs PowerShell 7 (`pwsh`). Then save the key:
+
+```bash
+dotnet user-secrets set "Jwt:SigningKey" "<paste-your-key-here>" --project TaskManagementApi
+```
+
+Check it with `dotnet user-secrets list --project TaskManagementApi`. In Visual Studio you can also right-click the `TaskManagementApi` project and choose **Manage User Secrets**, then add:
+
+```json
+{
+  "Jwt:SigningKey": "<paste-your-key-here>"
+}
+```
+
+`Jwt:Issuer` and `Jwt:Audience` are not secret and are already in `appsettings.json`. If any of the three values is missing, the app stops at startup with `Jwt:... is missing.`
+
+User Secrets are only loaded in the `Development` environment. On a server, set the key as the environment variable `Jwt__SigningKey` (double underscore) or use a secret store.
+
+**3. Create the database**
 
 ```bash
 dotnet ef database update --project TaskManagementApi.Infrastructure --startup-project TaskManagementApi
@@ -26,11 +58,35 @@ dotnet ef database update --project TaskManagementApi.Infrastructure --startup-p
 
 This applies the migrations and adds starter data (2 projects, 2 users). Migrations live in the Infrastructure project, and the API project is the startup project because it holds the connection string.
 
-**3. Run the API**
+**4. Run the API**
 
 ```bash
 dotnet run --project TaskManagementApi
 ```
+
+It listens on `http://localhost:5264` (and `https://localhost:7267` with the `https` profile). The launch profiles set `ASPNETCORE_ENVIRONMENT=Development`, which the token endpoint below needs.
+
+**5. Get a token**
+
+In Development, `POST /api/dev/token` returns a signed token for any user and role:
+
+```bash
+curl -X POST http://localhost:5264/api/dev/token -H "Content-Type: application/json" -d "{\"userId\": 1, \"role\": \"Manager\"}"
+```
+
+The response is `{ "token": "eyJ..." }`. Send it on protected requests:
+
+```
+Authorization: Bearer eyJ...
+```
+
+| Role | Can do |
+|---|---|
+| `Admin` | Everything, including deleting projects |
+| `Manager` | Create, update, assign and delete any task |
+| any other role, e.g. `User` | Create tasks; update only tasks assigned to them (their `userId`) |
+
+Tokens expire after 30 minutes; request a new one when you get 401. The endpoint returns 404 outside Development, because it is a development-only issuer, not a real login.
 
 ## Reset the database
 ```bash
@@ -41,13 +97,20 @@ dotnet ef database update --project TaskManagementApi.Infrastructure --startup-p
 > **Upgrading from an older version?** The migrations were recreated when the solution was split into layers. An existing `TaskManagementDb` will not update, so drop and recreate it with the commands above.
 
 ## Endpoints
-| Method | Route | Success | Failure |
-|---|---|---|---|
-| GET | `/api/tasks` | 200 | none |
-| GET | `/api/tasks/{id}` | 200 | 404 unknown ID |
-| POST | `/api/tasks` | 201 with `Location` header | 400 invalid body, unknown project or user |
-| PUT | `/api/tasks/{id}` | 200 | 404 unknown ID, 400 invalid body, unknown project or user |
-| DELETE | `/api/tasks/{id}` | 204 | 404 unknown ID, 401 no token, 403 role is not `Manager` or `Admin` |
+| Method | Route | Who can call it | Success | Failure |
+|---|---|---|---|---|
+| POST | `/api/dev/token` | anyone, Development only | 200 with `{ token }` | 404 outside Development |
+| GET | `/api/tasks` | anyone | 200 | none |
+| GET | `/api/tasks/{id}` | anyone | 200 | 404 unknown ID |
+| POST | `/api/tasks` | any valid token | 201 with `Location` header | 400 invalid body or unknown project |
+| PUT | `/api/tasks/{id}` | `Manager`, `Admin`, or the task's assignee | 200 | 404 unknown ID, 400 invalid body or unknown project |
+| PUT | `/api/tasks/{id}/assignee` | `Manager`, `Admin` | 200 | 404 unknown ID, 400 unknown user |
+| DELETE | `/api/tasks/{id}` | `Manager`, `Admin` | 204 | 404 unknown ID |
+| DELETE | `/api/projects/{id}` | `Admin` | 204 (also deletes the project's tasks) | 404 unknown ID |
+
+Every endpoint except the anonymous ones also returns **401** without a valid token and **403** when the token's role or user is not allowed.
+
+To assign or unassign a task, send `{ "assigneeId": 2 }` or `{ "assigneeId": null }` to `PUT /api/tasks/{id}/assignee`.
 
 ### Task fields
 | Field | Notes |
@@ -58,7 +121,7 @@ dotnet ef database update --project TaskManagementApi.Infrastructure --startup-p
 | `priority` | `0` Low, `1` Medium, `2` High |
 | `dueDate` | required, ISO 8601 date |
 | `projectId` | required, must be an existing project |
-| `assigneeId` | optional, must be an existing user if given |
+| `assigneeId` | read-only in `POST` and `PUT`; set it with `PUT /api/tasks/{id}/assignee` |
 
 ### Task list: filters and paging
 `GET /api/tasks?status=Pending&assigneeId=1&page=2&pageSize=5`
@@ -74,6 +137,8 @@ The response contains `items`, `page`, `pageSize`, `totalCount` and `totalPages`
 
 ## Sample requests
 `TaskManagementApi/TaskManagementApi.http` contains a request for every endpoint, plus the 404 and 400 cases. Update the host address at the top to match your port, then run the requests from Visual Studio or the VS Code REST Client extension.
+
+Run the two login requests at the top (`managerLogin`, `userLogin`) first. The other requests read the token from their responses, so no token is ever pasted into the file. Run the logins again when requests start returning 401.
 
 ## SQL examples
 `sql-examples.sql` contains the join, paging, grouping, foreign key and cascade queries.
@@ -172,8 +237,15 @@ Or use Test Explorer in Visual Studio. The tests use SQL Server LocalDB, so they
 | File | Purpose |
 |---|---|
 | `ApiFactory.cs` | Starts the API with a temporary test database and removes it afterwards |
+| `TestTokens.cs` | Creates signed test tokens; optional parameters make expired, forged or wrong-issuer/audience tokens |
 | `TaskApiTests.cs` | HTTP integration tests for `/api/tasks` |
+| `TokenValidationTests.cs` | Bad tokens are rejected with 401 |
+| `ProjectAuthTests.cs` | Only Admin can delete projects |
+| `TaskAssignAuthTests.cs` | Only Manager and Admin can assign tasks |
+| `TaskUpdateAuthTests.cs` | Per-user task update rule |
 | `ArchitectureTests.cs` | Checks the dependency rules between layers |
+
+The tests do not need your User Secrets. `ApiFactory` sets its own test-only issuer, audience and signing key, and `TestTokens` signs tokens with them.
 
 ### Integration tests (`TaskApiTests`)
 | Test | Checks |
@@ -187,6 +259,15 @@ Or use Test Explorer in Visual Studio. The tests use SQL Server LocalDB, so they
 | `DeleteTask_Existing_ReturnsNoContentAndTaskIsGone` | `DELETE` returns 204 and the task is gone |
 | `GetTasks_PageSizeOver100_IsCappedAt100` | `pageSize` above 100 is capped at 100 |
 | `GetTasks_StatusFilter_ReturnsOnlyMatchingTasks` | `?status=Completed` returns only completed tasks |
+
+### Authorization tests
+| File | Tests | Expected |
+|---|---|---|
+| `TokenValidationTests` | no token, malformed, forged, expired, wrong issuer, wrong audience | 401 |
+| | valid token | accepted |
+| `ProjectAuthTests` | Admin / Manager / no token / unknown id deletes a project | 204 / 403 / 401 / 404 |
+| `TaskAssignAuthTests` | Manager / Admin / User / no token assigns; unknown task; unknown user | 200 / 200 / 403 / 401 / 404 / 400 |
+| `TaskUpdateAuthTests` | owner / other user / Manager / no token updates; unknown task | 200 / 403 / 200 / 401 / 404 |
 
 ### Architecture tests (`ArchitectureTests`)
 | Test | Checks |
@@ -203,6 +284,9 @@ The tests read the assemblies each layer actually uses (`GetReferencedAssemblies
 4. Assert on data your test created, not on total counts, because other tests in the class share the database.
 
 ### Troubleshooting
+- **The app stops with `Jwt:SigningKey is missing.`:** you skipped setup step 2. Set the key with `dotnet user-secrets set`.
+- **Every protected request returns 401:** the token is missing, expired (30 minutes) or was created by a run with a different signing key. Get a new one from `POST /api/dev/token`.
+- **`POST /api/dev/token` returns 404:** the app is not running in `Development`. Use a launch profile, or set `ASPNETCORE_ENVIRONMENT=Development`.
 - **All tests fail with `PendingModelChangesWarning`:** the model in `AppDbContext` changed without a migration. Add one:
   ```bash
   dotnet ef migrations add <Name> --project TaskManagementApi.Infrastructure --startup-project TaskManagementApi
@@ -215,8 +299,9 @@ The tests read the assemblies each layer actually uses (`GetReferencedAssemblies
 TaskManagementApi/
 ├─ TaskManagementApi.slnx
 ├─ README.md
+├─ SECURITY.md                        authentication, authorization and secrets
 ├─ sql-examples.sql
-├─ TaskManagementApi/                 API: controllers, Program.cs, appsettings
+├─ TaskManagementApi/                 API: controllers, Authorization/, Program.cs, appsettings
 ├─ TaskManagementApi.Application/     DTOs, services, ITaskRepository, exceptions
 ├─ TaskManagementApi.Domain/          entities and enums
 ├─ TaskManagementApi.Infrastructure/  AppDbContext, migrations, EfTaskRepository
