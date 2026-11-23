@@ -1,4 +1,5 @@
-﻿using LinqReporting.Entity;
+﻿using LinqReporting.Dtos;
+using LinqReporting.Entity;
 
 namespace LinqReporting.Reporting
 {
@@ -20,28 +21,44 @@ namespace LinqReporting.Reporting
         }
 
 
-        public SalarySummary GetSalarySummary(IEnumerable<Employee> employees)
+        public SalarySummaryDto GetSalarySummary(IEnumerable<Employee> employees)
         {
             var salaries = employees.Select(e => e.Salary).ToList();
 
             if (salaries.Count == 0)
-                return new SalarySummary(0, 0m, 0m);
+                return new SalarySummaryDto(0, 0m, 0m);
 
-            return new SalarySummary(salaries.Count, salaries.Average(), GetSalaryMedian(salaries));
+            return new SalarySummaryDto(salaries.Count, salaries.Average(), GetSalaryMedian(salaries));
         }
 
-        public IReadOnlyList<DepartmentReport> GetDepartmentReport(IEnumerable<Employee> employees)
+        public IReadOnlyList<DepartmentReportDto> GetDepartmentReport(IEnumerable<Employee> employees)
         {
 
             var result = employees.GroupBy(e => e.Department, StringComparer.OrdinalIgnoreCase)
-                .Select(g => new DepartmentReport(
+                .Select(g => new DepartmentReportDto(
                     g.Key,
                     g.Count(),
                     g.Average(e => e.Salary),
                     GetSalaryMedian(g.Select(e => e.Salary).ToList())))
-                .OrderBy(r => r.Department)
+                .OrderBy(r => r.Department, StringComparer.OrdinalIgnoreCase)
                 .ToList();
 
+            return result;
+        }
+
+        public IReadOnlyList<EmployeeRankDto> GetHireDateRanking(IEnumerable<Employee> employees)
+        {
+
+            var result = employees
+                .OrderBy(e => e.HireDate)
+                .ThenBy(e => e.Id)
+                .Select((e, index) => new EmployeeRankDto(
+                    index + 1,
+                    e.Id,
+                    e.Name,
+                    e.Department,
+                    e.HireDate
+                )).ToList();
             return result;
         }
     }
