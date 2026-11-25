@@ -1,11 +1,15 @@
 
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Text.Json.Serialization;
+using TaskManagementApi.Application.DTOs;
 using TaskManagementApi.Application.Repositories;
 using TaskManagementApi.Application.Services;
+using TaskManagementApi.Application.Validators;
 using TaskManagementApi.Authorization;
 using TaskManagementApi.Infrastructure.Persistence;
 using TaskManagementApi.Infrastructure.Repositories;
@@ -59,7 +63,12 @@ namespace TaskManagementApi
 
             // Add services to the container.
 
-            builder.Services.AddControllers();
+            builder.Services.AddControllers()
+                .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+
+            //validator registrations
+            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
 
