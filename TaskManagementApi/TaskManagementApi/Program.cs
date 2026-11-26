@@ -11,6 +11,7 @@ using TaskManagementApi.Application.Repositories;
 using TaskManagementApi.Application.Services;
 using TaskManagementApi.Application.Validators;
 using TaskManagementApi.Authorization;
+using TaskManagementApi.ErrorHandling;
 using TaskManagementApi.Infrastructure.Persistence;
 using TaskManagementApi.Infrastructure.Repositories;
 
@@ -63,11 +64,12 @@ namespace TaskManagementApi
 
             // Add services to the container.
 
-            builder.Services.AddControllers()
-                .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+            builder.Services.AddControllers();
+
+            //    .AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 
             //validator registrations
-            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+            builder.Services.AddValidatorsFromAssemblyContaining<CreateTaskDtoValidator>();
 
             // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
             builder.Services.AddOpenApi();
@@ -84,6 +86,11 @@ namespace TaskManagementApi
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("AppDbConnection")));
 
+
+            //global handler
+            builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+            builder.Services.AddProblemDetails();
+
             var app = builder.Build();
 
 
@@ -92,6 +99,8 @@ namespace TaskManagementApi
             {
                 app.MapOpenApi();
             }
+
+            app.UseExceptionHandler();
 
             app.UseHttpsRedirection();
 

@@ -4,6 +4,7 @@ using TaskManagementApi.Application.Exceptions;
 using TaskManagementApi.Domain.Entities;
 using TaskManagementApi.Application.Services;
 using Microsoft.AspNetCore.Authorization;
+using FluentValidation;
 
 namespace TaskManagementApi.Controllers
 {
@@ -13,11 +14,20 @@ namespace TaskManagementApi.Controllers
     {
         private readonly ITaskService _taskService;
         private readonly IAuthorizationService _authorizationService;
+        private readonly IValidator<UpdateTaskDto> _updateValidator;
+        private readonly IValidator<CreateTaskDto> _createValidator;
 
-        public TasksController(ITaskService taskService, IAuthorizationService authorizationService)
+        public TasksController(
+            ITaskService taskService,
+            IAuthorizationService authorizationService,
+            IValidator<UpdateTaskDto> updateValidator,
+            IValidator<CreateTaskDto> createValidator
+            )
         {
             _taskService = taskService;
             _authorizationService = authorizationService;
+            _updateValidator = updateValidator;
+            _createValidator = createValidator;
         }
 
 
@@ -46,40 +56,41 @@ namespace TaskManagementApi.Controllers
         [HttpPut("{id}")]
         public async Task<ActionResult<TaskResponseDto>> UpdateTask(int id, UpdateTaskDto updateTask)
         {
+            var result = await _updateValidator.ValidateAsync(updateTask);
+            if (!result.IsValid)
+            {
+                foreach (var e in result.Errors)
+                    ModelState.AddModelError(e.PropertyName, e.ErrorMessage);
+                return ValidationProblem(ModelState);
+            }
+
             var existing = await _taskService.GetTaskById(id);
             if (existing is null) return NotFound();
 
             var auth = await _authorizationService.AuthorizeAsync(User, existing, "CanUpdateTasks");
             if (!auth.Succeeded) return Forbid();
 
-            try
-            {
-                var updated = await _taskService.UpdateTask(id, updateTask);
+            var updated = await _taskService.UpdateTask(id, updateTask);
 
-                if (updated is null)
-                    return NotFound();
-
-                return Ok(updated);
-            }
-            catch (InvalidReferenceException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            if (updated is null)
+                return NotFound();
+            return Ok(updated);
         }
 
         [HttpPost]
         public async Task<ActionResult<TaskResponseDto>> CreateTask(CreateTaskDto createTask)
-        {
-            try
+        {            
+            var result = await _createValidator.ValidateAsync(createTask);
+            if (!result.IsValid)
             {
-                var createdTask = await _taskService.CreateTask(createTask);
-
-                return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
+                foreach (var e in result.Errors)
+                    ModelState.AddModelError(e.PropertyName, e.ErrorMessage);
+                return ValidationProblem(ModelState);
             }
-            catch (InvalidReferenceException ex)
-            {
-                return BadRequest(new { error = ex.Message});
-            }  
+
+            var createdTask = await _taskService.CreateTask(createTask);
+
+            return CreatedAtAction(nameof(GetTaskById), new { id = createdTask.Id }, createdTask);
         }
 
         
@@ -99,19 +110,13 @@ namespace TaskManagementApi.Controllers
         [Authorize(Policy = "CanAssignTasks")]
         public async Task<ActionResult> UpdateAssignee(int id, AssignTaskDto dto)
         {
-            try
-            {
-                var updated = await _taskService.AssignTask(id, dto.AssigneeId);
 
-                if (updated is null)
-                    return NotFound();
+            var updated = await _taskService.AssignTask(id, dto.AssigneeId);
+        
+            if (updated is null)
+                return NotFound();
 
-                return Ok(updated);
-            }
-            catch (InvalidReferenceException ex)
-            {
-                return BadRequest(new { error = ex.Message });
-            }
+            return Ok(updated);
         }
 
     }
