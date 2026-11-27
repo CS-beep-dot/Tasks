@@ -25,7 +25,14 @@ namespace TaskManagementApi.Infrastructure.Repositories
         }
 
         public async Task<(List<TaskItem> Items, int Total)> GetPageAsync(
-            TaskItemStatus? status, int? assigneeId, int page, int pageSize)
+            TaskItemStatus? status,
+            int? assigneeId,
+            TaskPriority? priority,
+            int? projectId,
+            string? search,
+            string? sort, 
+            int page,
+            int pageSize)
         {
             IQueryable<TaskItem> query = _db.Tasks.AsNoTracking();
 
@@ -35,10 +42,26 @@ namespace TaskManagementApi.Infrastructure.Repositories
             if (assigneeId != null)
                 query = query.Where(t => t.AssigneeId == assigneeId);
 
+            if (priority != null)
+                query = query.Where(t => t.Priority == priority);
+
+            if (projectId != null)
+                query = query.Where(t => t.ProjectId == projectId);
+
+            if (!string.IsNullOrWhiteSpace(search))
+                query = query.Where(t => t.Title.Contains(search) || t.Description.Contains(search));
+
             int total = await query.CountAsync();
 
+            query = sort switch
+            {
+                "dueDate" => query.OrderBy(t => t.DueDate).ThenBy(t => t.Id),
+                "-dueDate" => query.OrderByDescending(t => t.DueDate).ThenBy(t => t.Id),
+                _ => query.OrderBy(t => t.Id)
+            };
+
+
             var items = await query
-                .OrderBy(t => t.Id)
                 .Skip((page - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();

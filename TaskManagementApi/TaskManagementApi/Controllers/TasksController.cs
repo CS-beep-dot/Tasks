@@ -35,11 +35,15 @@ namespace TaskManagementApi.Controllers
         public async Task<ActionResult<PagedResult<TaskResponseDto>>> GetAllTasks(
             [FromQuery] TaskItemStatus? status,
             [FromQuery] int? assigneeId,
+            [FromQuery] TaskPriority? priority,
+            [FromQuery] int? projectId,
+            [FromQuery] string? search,
+            [FromQuery] string? sort,
             [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 10
+            [FromQuery] int pageSize = 20
             )
         {
-            return Ok(await _taskService.GetTasks(status, assigneeId, page, pageSize));
+            return Ok(await _taskService.GetTasks(status, assigneeId, priority, projectId, search, sort, page, pageSize));
         }
 
         [HttpGet("{id}")]

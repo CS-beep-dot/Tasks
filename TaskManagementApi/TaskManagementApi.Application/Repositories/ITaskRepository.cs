@@ -7,7 +7,13 @@ namespace TaskManagementApi.Application.Repositories
         Task<TaskItem?> GetByIdAsync(int id);
         Task<TaskItem?> GetByIdForUpdateAsync(int id);
         Task<(List<TaskItem> Items, int Total)> GetPageAsync(
-            TaskItemStatus? status, int? assigneeId, int page, int pageSize);
+            TaskItemStatus? status,
+            int? assigneeId,
+            TaskPriority? priority,
+            int? projectId,
+            string? search,
+            string? sort,
+            int page, int pageSize);
         Task<bool> ProjectExistsAsync(int id);
         Task<bool> UserExistsAsync(int id);
         void Add(TaskItem task);

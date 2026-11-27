@@ -200,7 +200,15 @@ namespace TaskManagementApi.Tests
 
             private static Exception Boom() => new InvalidOperationException(SecretMessage);
 
-            public Task<PagedResult<TaskResponseDto>> GetTasks(TaskItemStatus? status = null, int? assigneeId = null, int page = 1, int pageSize = 10) => throw Boom();
+            public Task<PagedResult<TaskResponseDto>> GetTasks(
+                TaskItemStatus? status = null,
+                int? assigneeId = null,
+                TaskPriority? priority = null,
+                int? projectId = null,
+                string? search = null,
+                string? sort = null,
+                int page = 1,
+                int pageSize = 20) => throw Boom();
             public Task<TaskResponseDto?> GetTaskById(int id) => throw Boom();
             public Task<TaskResponseDto?> UpdateTask(int id, UpdateTaskDto taskItem) => throw Boom();
             public Task<TaskResponseDto> CreateTask(CreateTaskDto createTask) => throw Boom();

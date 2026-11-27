@@ -27,15 +27,19 @@ namespace TaskManagementApi.Application.Services
         public async Task<PagedResult<TaskResponseDto>> GetTasks(
             TaskItemStatus? status = null,
             int? assigneeId = null,
+            TaskPriority? priority = null,
+            int? projectId = null,
+            string? search = null,
+            string? sort = null,
             int page = 1,
-            int pageSize = 10)
+            int pageSize = 20)
         {
 
             if (page < 1) page = 1;
-            if (pageSize < 1) pageSize = 10;
+            if (pageSize < 1) pageSize = 20;
             if (pageSize > 100) pageSize = 100;
 
-            var (items, total) = await _repo.GetPageAsync(status, assigneeId, page, pageSize);
+            var (items, total) = await _repo.GetPageAsync(status, assigneeId, priority, projectId, search, sort, page, pageSize);
 
             return new PagedResult<TaskResponseDto>
             {
